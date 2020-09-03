@@ -3,17 +3,17 @@ import axios from 'axios';
 
 // Const
 const cardsContainer = document.querySelector('div.cards');
-const followersArray = ['tetondan', 'dustinmyers', 'justsml', 'luishrd', 'bigknell'];
+const followersArray = ['tetondan', 'jack'];
 
 // >>>>>>>>>> Used httpie to review the data passed through the response
 
 // Request's userdata for given username and then creates & appends a card to the DOM with data derived from a GET response
 function getUser(username) {
-    return axios.get(`https://api.github.com/users/${username}`)
+    axios.get(`https://api.github.com/users/${username}`)
         .then(response => {
-            // Success -- create and append the card derived from the user data we recieved
-            const userData = response.data;
-            const newCard = cardMaker(userData);
+            // Success -- create and append the card derived from the userdata we recieved
+            const userdata = response.data;
+            const newCard = cardMaker(userdata);
             cardsContainer.append(newCard);
         })
         .catch(err => {
@@ -24,20 +24,20 @@ function getUser(username) {
 // 1. Request my user data
 getUser('leachtucker');
 
-// 2. Request user data for each username in the array
-followersArray.forEach(username => {
-    getUser(username);
-});
+// 3b. Stretch -- Invoke our getFollowers function
+getFollowers('leachtucker');
 
-// 3. Stretch -- Request the user's followers' data
-function getFollowers(user) {
-    axios.get(user["followers_url"])
+// 3a. Stretch -- Request the user's followers' data and add their usernames to the global array
+function getFollowers(username) {
+    axios.get([`https://api.github.com/users/${username}/followers`])
         .then(response => {
             // Success -- iterate through the data we recieved. Create & append a card for each passthrough
             response.data.forEach(follower => {
-                console.log(follower);
-                cardsContainer.append(cardMaker(follower));
+                followersArray.push(follower["login"]);
             })
+            followersArray.forEach(username => {
+                getUser(username);
+            });
         })
         .catch(err => {
             console.log(`An error has occured retrieving the users followers: ${err}`);
